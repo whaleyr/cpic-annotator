@@ -91,8 +91,8 @@ if __name__ == "__main__":
         m_matcher_jsons: list[str] = glob(str(m_input_dir.joinpath(args.matcher_json_pattern)))
         m_phenotyper_jsons: list[str] = glob(str(m_input_dir.joinpath(args.phenotyper_json_pattern)))
         # get sample list based on json file names
-        matcher_json_samples: list[str] = [x.split('.')[-3] for x in m_matcher_jsons]
-        phenotyper_json_samples: list[str] = [x.split('.')[-3] for x in m_phenotyper_jsons]
+        matcher_json_samples: list[str] = ['.'.join(x.split('.')[:-2]) for x in m_matcher_jsons]
+        phenotyper_json_samples: list[str] = ['.'.join(x.split('.')[:-2]) for x in m_phenotyper_jsons]
         # further narrow down sample list based on sample_file
         m_samples: list[str] = []
         if args.sample_file:
