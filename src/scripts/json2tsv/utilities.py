@@ -61,6 +61,19 @@ def get_names_and_genotypes(json_entry: dict, reference_genotypes: list[str]) ->
 
     return haplotype_names, alternative_genotypes
 
+def get_non_ref_genotypes(variants):
+    non_ref_genotypes = []
+    for variant in variants:
+        wildtypeAllele = variant['wildtypeAllele']
+        wildtypeGenotype = f"{wildtypeAllele}/{wildtypeAllele}"
+        if variant['call'] != wildtypeGenotype:
+            non_ref_genotypes.append(variant)
+    
+    non_ref_genotypes = sorted(non_ref_genotypes, key=lambda x: x['position'])
+    non_ref_genotypes = [f"{x['position']}:{x['call']}" for x in non_ref_genotypes]
+
+    return (';'.join(non_ref_genotypes))
+
 
 def extract_pcat_json(matcher_json: str, phenotyper_json: str, genes: list[str], sample_id: str,
                       reference_genotypes: dict[str, list[str]], guideline_source: str = 'CPIC') \
@@ -86,7 +99,8 @@ def extract_pcat_json(matcher_json: str, phenotyper_json: str, genes: list[str],
         'haplotype_1': [], 'haplotype_2': [],
         'haplotype_1_functions': [], 'haplotype_2_functions': [],
         'haplotype_1_variants': [], 'haplotype_2_variants': [],
-        'missing_positions': [], 'uncallable_haplotypes': []
+        'missing_positions': [], 'uncallable_haplotypes': [], 
+        'non_ref_genotypes': []
     }
 
     for i_gene in genes:
@@ -127,6 +141,7 @@ def extract_pcat_json(matcher_json: str, phenotyper_json: str, genes: list[str],
             pcat_summary['haplotype_2_variants'].append('')
             pcat_summary['missing_positions'].append(missing_positions)
             pcat_summary['uncallable_haplotypes'].append(uncallable_haplotypes)
+            pcat_summary['non_ref_genotypes'].append(get_non_ref_genotypes(phenotyper_data[i_gene]['variants']))
         elif i_gene in special_toxicity_genes:
             # get the phenotyper entries
             # in phenotyper json, special toxicity genes have only one entry of recommendationDiplotypes
@@ -215,6 +230,7 @@ def extract_pcat_json(matcher_json: str, phenotyper_json: str, genes: list[str],
             pcat_summary['haplotype_2_variants'].append('')
             pcat_summary['missing_positions'].append(missing_positions)
             pcat_summary['uncallable_haplotypes'].append(uncallable_haplotypes)
+            pcat_summary['non_ref_genotypes'].append(get_non_ref_genotypes(phenotyper_data[i_gene]['variants']))
 
         else:  # for genes other than DPYD and RYR1
             for idx_diplotype in range(n_diploids):
@@ -259,4 +275,7 @@ def extract_pcat_json(matcher_json: str, phenotyper_json: str, genes: list[str],
                         pcat_summary['haplotype_1_variants'].append(','.join(tmp_genotypes))
                     if json_field == 'haplotype2':
                         pcat_summary['haplotype_2_variants'].append(','.join(tmp_genotypes))
+        
+                pcat_summary['non_ref_genotypes'].append(get_non_ref_genotypes(phenotyper_data[i_gene]['variants']))
+                
     return pcat_summary

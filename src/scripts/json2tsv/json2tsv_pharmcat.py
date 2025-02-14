@@ -91,8 +91,8 @@ if __name__ == "__main__":
         m_matcher_jsons: list[str] = glob(str(m_input_dir.joinpath(args.matcher_json_pattern)))
         m_phenotyper_jsons: list[str] = glob(str(m_input_dir.joinpath(args.phenotyper_json_pattern)))
         # get sample list based on json file names
-        matcher_json_samples: list[str] = [x.split('.')[-3] for x in m_matcher_jsons]
-        phenotyper_json_samples: list[str] = [x.split('.')[-3] for x in m_phenotyper_jsons]
+        matcher_json_samples: list[str] = ['.'.join(x.split('.')[:-2]) for x in m_matcher_jsons]
+        phenotyper_json_samples: list[str] = ['.'.join(x.split('.')[:-2]) for x in m_phenotyper_jsons]
         # further narrow down sample list based on sample_file
         m_samples: list[str] = []
         if args.sample_file:
@@ -173,7 +173,8 @@ if __name__ == "__main__":
             'haplotype_1': [], 'haplotype_2': [],
             'haplotype_1_functions': [], 'haplotype_2_functions': [],
             'haplotype_1_variants': [], 'haplotype_2_variants': [],
-            'missing_positions': [], 'uncallable_haplotypes': []
+            'missing_positions': [], 'uncallable_haplotypes': [], 
+            'non_ref_genotypes': []
         }
         if args.concurrent_mode:
             with concurrent.futures.ProcessPoolExecutor(max_workers=m_max_processes) as e:
@@ -225,7 +226,7 @@ if __name__ == "__main__":
                            'Haplotype_1', 'Haplotype_2',
                            'Haplotype_1_Functions', 'Haplotype_2_Functions',
                            'Haplotype_1_Variants', 'Haplotype_2_Variants',
-                           'Missing_Positions', 'Uncallable_Haplotypes']
+                           'Missing_Positions', 'Uncallable_Haplotypes', 'NonRefGenotypes']
         rez.to_csv(m_output_file.absolute(), mode='w', sep="\t", header=cols, index=False)
 
         end = timer()
